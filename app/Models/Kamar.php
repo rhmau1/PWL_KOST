@@ -19,10 +19,18 @@ class Kamar extends Model
         'fasilitas',
         'status',
         'keterangan',
+        'images',
+        'tipe_penghuni',
+        'kapasitas',
+        'is_furnished',
+        'aturan_khusus',
     ];
     protected $casts = [
         'fasilitas' => 'array',
         'harga' => 'integer',
         'status' => 'boolean',
+        'images' => 'array',
+        'kapasitas' => 'integer',
+        'is_furnished' => 'boolean',
     ];
 }
