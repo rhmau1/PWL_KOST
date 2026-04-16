@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
 #[Fillable(['name', 'email', 'password', 'role'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -28,6 +30,19 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        if ($panel->getId() === 'admin') {
+            return $this->isAdmin();
+        }
+
+        if ($panel->getId() === 'penghuni') {
+            return $this->isPenghuni() && $this->penghuni !== null && $this->penghuni->kos_id !== null;
+        }
+
+        return false;
     }
 
     public function isAdmin()
@@ -49,7 +64,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Kos::class);
     }
-
+public function pembayarans()
+{
+    return $this->hasMany(Pembayaran::class);
+}
     protected static function booted()
     {
         static::created(function ($user) {

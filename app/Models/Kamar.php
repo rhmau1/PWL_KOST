@@ -43,4 +43,8 @@ class Kamar extends Model
     {
         return $this->belongsTo(Kos::class);
     }
+    public function pembayarans()
+{
+    return $this->hasMany(Pembayaran::class);
+}
 }

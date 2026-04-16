@@ -22,7 +22,10 @@ class Kos extends Model
     {
         return $this->hasMany(Kamar::class);
     }
-
+    public function pembayarans()
+    {
+        return $this->hasMany(Pembayaran::class);
+    }
     public function penghunis()
     {
         return $this->hasMany(Penghuni::class);
