@@ -74,7 +74,11 @@ class Register extends BaseRegister
                     ->schema([
                         Select::make('kos_id')
                             ->label('Pilih Kos')
-                            ->options(Kos::pluck('nama_kos', 'id'))
+                            ->options(Kos::whereHas('kamars', fn ($q) => $q->where('is_available', true))->pluck('nama_kos', 'id'))
+                            ->helperText(fn () => ! Kos::whereHas('kamars', fn ($q) => $q->where('is_available', true))->exists() 
+                                ? new \Illuminate\Support\HtmlString('<span class="text-danger-600 dark:text-danger-400 font-medium">Maaf, semua kost sudah penuh</span>') 
+                                : null)
+                            ->disabled(fn () => ! Kos::whereHas('kamars', fn ($q) => $q->where('is_available', true))->exists())
                             ->required()
                             ->live(),
                         Select::make('kamar_id')
@@ -85,8 +89,11 @@ class Register extends BaseRegister
                                     return [];
                                 }
 
-                                return Kamar::where('kos_id', $kosId)->pluck('nomor', 'id');
+                                return Kamar::where('kos_id', $kosId)
+                                    ->where('is_available', true)
+                                    ->pluck('nomor', 'id');
                             })
+                            ->disabled(fn (Get $get) => ! $get('kos_id'))
                             ->required()
                             ->live(),
                         Select::make('tipe_sewa')
