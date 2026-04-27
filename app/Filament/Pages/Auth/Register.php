@@ -85,7 +85,7 @@ class Register extends BaseRegister
                                     return [];
                                 }
 
-                                return Kamar::where('kos_id', $kosId)->pluck('nomor', 'nomor');
+                                return Kamar::where('kos_id', $kosId)->pluck('nomor', 'id');
                             })
                             ->required()
                             ->live(),
@@ -93,7 +93,7 @@ class Register extends BaseRegister
                             ->label('Tipe Pembayaran/Sewa')
                             ->options([
                                 'booking' => 'Booking Kamar',
-                                'sewa_sebulan' => 'Sewa 1 Bulan Langsung',
+                                'sewa' => 'Sewa 1 Bulan Langsung',
                             ])
                             ->required(),
                     ]),
@@ -185,7 +185,7 @@ class Register extends BaseRegister
 
         $panelId = Filament::getCurrentPanel()->getId();
         if ($panelId === 'penghuni') {
-            $this->redirect(route('waiting.approval'));
+            $this->redirect(route('filament.penghuni.pages.waiting-approval'));
 
             return null;
         }

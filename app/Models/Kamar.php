@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class Kamar extends Model
 {
@@ -40,7 +41,19 @@ class Kamar extends Model
         return $this->belongsTo(Kos::class);
     }
     public function pembayarans()
-{
-    return $this->hasMany(Pembayaran::class);
-}
+    {
+        return $this->hasMany(Pembayaran::class);
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($kamar) {
+            if (Auth::check() && empty($kamar->kos_id)) {
+                $kos = \App\Models\Kos::where('user_id', Auth::id())->first();
+                if ($kos) {
+                    $kamar->kos_id = $kos->id;
+                }
+            }
+        });
+    }
 }

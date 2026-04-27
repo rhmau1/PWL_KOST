@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Penghunis\Tables;
 
+use App\Models\Kamar;
 use App\Models\Pembayaran;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -24,16 +25,21 @@ class PenghunisTable
                 TextColumn::make('nama')->searchable(),
                 TextColumn::make('user.email')->label('Email'),
                 // TextColumn::make('user.pembayarans.status')->label('Status'),
-                IconColumn::make('user.pembayarans.status')
+                IconColumn::make('payment_status')
                     ->label('Status')
-                    ->icon(fn ($record) => match(true) {
-                        $record->kos_id !== null => 'heroicon-o-check-badge',
-                        $record->user->pembayarans->where('status', 'rejected')->isNotEmpty() => 'heroicon-o-x-circle',
+                    ->getStateUsing(fn ($record) => match(true) {
+                        $record->kos_id !== null => 'verified',
+                        $record->user->pembayarans->where('status', 'rejected')->isNotEmpty() => 'rejected',
+                        default => 'pending',
+                    })
+                    ->icon(fn ($state) => match($state) {
+                        'verified' => 'heroicon-o-check-badge',
+                        'rejected' => 'heroicon-o-x-circle',
                         default => 'heroicon-o-clock',
                     })
-                    ->color(fn ($record) => match(true) {
-                        $record->kos_id !== null => 'success',
-                        $record->user->pembayarans->where('status', 'rejected')->isNotEmpty() => 'danger',
+                    ->color(fn ($state) => match($state) {
+                        'verified' => 'success',
+                        'rejected' => 'danger',
                         default => 'warning',
                     }),
             ])
@@ -116,6 +122,9 @@ class PenghunisTable
                                 'status' => 'verified',
                                 'catatan' => $data['catatan'] ?? $pembayaran->catatan,
                             ]);
+
+                            // Update kamar status to occupied
+                            Kamar::where('id', $pembayaran->kamar_id)->update(['is_available' => false]);
 
                             Notification::make()
                                 ->title('Penghuni berhasil diverifikasi.')

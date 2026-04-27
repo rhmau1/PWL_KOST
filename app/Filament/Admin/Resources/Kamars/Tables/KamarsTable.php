@@ -54,7 +54,7 @@ class KamarsTable
                         'success' => 'Campur',
                     ]),
 
-                BadgeColumn::make('status')
+                BadgeColumn::make('is_available')
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => $state ? 'Available' : 'Occupied')
                     ->colors([

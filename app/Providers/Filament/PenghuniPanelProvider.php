@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Penghuni\Pages\WaitingApproval;
 use App\Filament\Pages\Auth\Register;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -36,6 +37,7 @@ class PenghuniPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Penghuni/Pages'), for: 'App\Filament\Penghuni\Pages')
             ->pages([
                 Dashboard::class,
+                WaitingApproval::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Penghuni/Widgets'), for: 'App\Filament\Penghuni\Widgets')
             ->widgets([
@@ -55,6 +57,7 @@ class PenghuniPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                \App\Http\Middleware\CheckPenghuniApproval::class,
             ]);
     }
 }
