@@ -20,6 +20,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+
 class PenghuniPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -31,6 +32,7 @@ class PenghuniPanelProvider extends PanelProvider
             ->registration(Register::class)
             ->colors([
                 'primary' => Color::Amber,
+            
             ])
             ->discoverResources(in: app_path('Filament/Penghuni/Resources'), for: 'App\Filament\Penghuni\Resources')
             ->discoverPages(in: app_path('Filament/Penghuni/Pages'), for: 'App\Filament\Penghuni\Pages')
@@ -57,5 +59,6 @@ class PenghuniPanelProvider extends PanelProvider
                 Authenticate::class,
                 'role:penghuni',
             ]);
+            
     }
 }
