@@ -31,4 +31,9 @@ class Penghuni extends Model
     {
         return $this->belongsTo(Kos::class);
     }   
+
+    public function kamar()
+    {
+        return $this->belongsTo(Kamar::class);
+    }
 }

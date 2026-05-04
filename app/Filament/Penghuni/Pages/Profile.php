@@ -21,67 +21,118 @@ class Profile extends Page implements Forms\Contracts\HasForms
     protected static ?string $navigationLabel = 'Profil Saya';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::User;
 
-    // // 🔥 data form
-    // public $name;
-    // public $email;
-    // public $password;
-    // public $password_confirmation;
+    public ?array $data = [];
 
-    // // 🔥 isi awal
-    // public function mount(): void
-    // {
-    //     $this->form->fill([
-    //         'name' => auth()->user()->name,
-    //         'email' => auth()->user()->email,
-    //     ]);
-    // }
+    public bool $isEditing = false;
 
-    // // 🔥 form schema
-    // protected function getFormSchema(): array
-    // {
-    //     return [
-    //         \Filament\Forms\Components\Section::make('Data Profil')
-    //             ->schema([
-    //                 \Filament\Forms\Components\TextInput::make('name')
-    //                     ->label('Nama')
-    //                     ->required(),
+    public function mount(): void
+    {
+        $this->loadUserData();
+    }
 
-    //                 \Filament\Forms\Components\TextInput::make('email')
-    //                     ->label('Email')
-    //                     ->email()
-    //                     ->required(),
+    // Load data dari user + penghuni
+    public function loadUserData(): void
+    {
+        $user = auth()->user();
+        $penghuni = $user->penghuni;
 
-    //                 \Filament\Forms\Components\TextInput::make('password')
-    //                     ->label('Password Baru')
-    //                     ->password()
-    //                     ->dehydrated(fn ($state) => filled($state)),
+        $this->form->fill([
+            'name' => $user->name,
+            'email' => $user->email,
+            'no_hp' => $penghuni->no_hp ?? null,
+            'alamat' => $penghuni->alamat ?? null,
+        ]);
+    }
 
-    //                 \Filament\Forms\Components\TextInput::make('password_confirmation')
-    //                     ->label('Konfirmasi Password')
-    //                     ->password()
-    //                     ->same('password'),
-    //             ]),
-    //     ];
-    // }
+    public function enableEdit(): void
+    {
+        $this->isEditing = true;
+    }
 
-    // // 🔥 simpan
-    // public function submit(): void
-    // {
-    //     $data = $this->form->getState();
+    public function cancelEdit(): void
+    {
+        $this->isEditing = false;
+        $this->loadUserData();
+    }
 
-    //     unset($data['password_confirmation']);
+    protected function getFormSchema(): array
+    {
+        return [
+            Forms\Components\TextInput::make('name')
+                ->label('Nama')
+                ->required()
+                ->disabled(fn () => !$this->isEditing),
 
-    //     if (!empty($data['password'])) {
-    //         $data['password'] = Hash::make($data['password']);
-    //     } else {
-    //         unset($data['password']);
-    //     }
+            Forms\Components\TextInput::make('email')
+                ->email()
+                ->required()
+                ->disabled(fn () => !$this->isEditing),
 
-    //     auth()->user()->update($data);
+            Forms\Components\TextInput::make('no_hp')
+                ->label('No HP')
+                ->disabled(fn () => !$this->isEditing),
 
-    //     Notification::make()
-    //         ->title('Profil berhasil diperbarui')
-    //         ->success()
-    //         ->send();
-  //  }
+            Forms\Components\Textarea::make('alamat')
+                ->label('Alamat')
+                ->rows(3)
+                ->disabled(fn () => !$this->isEditing),
+
+            Forms\Components\TextInput::make('password')
+                ->password()
+                ->label('Password Baru')
+                ->minLength(6)
+                ->visible(fn () => $this->isEditing)
+                ->dehydrated(fn ($state) => filled($state)),
+
+            Forms\Components\TextInput::make('password_confirmation')
+                ->password()
+                ->label('Konfirmasi Password')
+                ->same('password')
+                ->visible(fn () => $this->isEditing)
+                ->dehydrated(false),
+        ];
+    }
+
+    public function submit(): void
+    {
+        $data = $this->form->getState();
+        $user = auth()->user();
+
+        // UPDATE USERS
+        $user->update([
+            'name' => $data['name'],
+            'email' => $data['email'],
+        ]);
+
+        // UPDATE PASSWORD (optional)
+        if (!empty($data['password'])) {
+            $user->update([
+                'password' => Hash::make($data['password'])
+            ]);
+        }
+
+        // UPDATE PENGHUNI (INI YANG MASUK KE ADMIN)
+        $penghuni = $user->penghuni;
+
+        if ($penghuni) {
+            $penghuni->update([
+                'nama' => $data['name'],
+                'no_hp' => $data['no_hp'],
+                'alamat' => $data['alamat'],
+            ]);
+        }
+
+        // UI
+        $this->isEditing = false;
+
+        Notification::make()
+            ->title('Profil berhasil diperbarui')
+            ->success()
+            ->send();
+    }
+
+    protected function getFormStatePath(): string
+    {
+        return 'data';
+    }
 }
