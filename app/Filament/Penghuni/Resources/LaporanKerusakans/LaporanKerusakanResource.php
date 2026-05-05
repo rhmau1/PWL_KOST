@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class LaporanKerusakanResource extends Resource
 {
@@ -44,6 +45,11 @@ class LaporanKerusakanResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('id_penghuni', auth()->user()->penghuni->id);
     }
 
     public static function getPages(): array
