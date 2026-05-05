@@ -25,7 +25,6 @@ class StatsOverview extends StatsOverviewWidget
 
         return [
             Stat::make('Kamar Terisi', "$kamarTerisi / $totalKamar"),
-            Stat::make('Estimasi Pendapatan', 'Rp '.number_format($estimasiPendapatan)),
             Stat::make('Kamar Kosong', $totalKamar - $kamarTerisi),
         ];
     }
